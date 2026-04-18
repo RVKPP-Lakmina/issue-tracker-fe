@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Issue } from '@/lib/types';
-import { useIssueStore } from '@/lib/store/issueStore';
-import { Button } from '@/components/ui/button';
+import { Issue } from "@/lib/types";
+import { useIssueStore } from "@/lib/store/issueStore";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,14 +10,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { StatusBadge } from './StatusBadge';
-import { PriorityBadge } from './PriorityBadge';
-import { Edit, Trash2, Eye } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { useDeleteIssue } from '@/lib/hooks/useApi';
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StatusBadge } from "./StatusBadge";
+import { PriorityBadge } from "./PriorityBadge";
+import { Edit, Trash2, Eye } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { useDeleteIssue } from "@/lib/hooks/useApi";
 
 interface IssueTableProps {
   issues: Issue[];
@@ -38,7 +38,7 @@ export function IssueTable({ issues, isLoading }: IssueTableProps) {
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       useIssueStore.setState({
-        selectedIssueIds: new Set(issues.map(i => i.id)),
+        selectedIssueIds: new Set(issues.map((i) => i.id)),
       });
     } else {
       useIssueStore.setState({ selectedIssueIds: new Set() });
@@ -47,7 +47,7 @@ export function IssueTable({ issues, isLoading }: IssueTableProps) {
 
   const handleQuickDelete = (issue: Issue, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm('Are you sure you want to delete this issue?')) {
+    if (window.confirm("Are you sure you want to delete this issue?")) {
       deleteIssue(issue.id);
     }
   };
@@ -57,7 +57,10 @@ export function IssueTable({ issues, isLoading }: IssueTableProps) {
       <div className="bg-card border border-border rounded-lg p-6">
         <div className="space-y-4">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-12 bg-secondary/30 rounded animate-pulse" />
+            <div
+              key={i}
+              className="h-12 bg-secondary/30 rounded animate-pulse"
+            />
           ))}
         </div>
       </div>
@@ -82,8 +85,12 @@ export function IssueTable({ issues, isLoading }: IssueTableProps) {
           <TableRow className="border-b border-border">
             <TableHead className="w-12 py-3">
               <Checkbox
-                checked={selectedIssueIds.size === issues.length && issues.length > 0}
-                onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+                checked={
+                  selectedIssueIds.size === issues.length && issues.length > 0
+                }
+                onCheckedChange={(checked) =>
+                  handleSelectAll(checked as boolean)
+                }
               />
             </TableHead>
             <TableHead>Title</TableHead>
@@ -97,7 +104,7 @@ export function IssueTable({ issues, isLoading }: IssueTableProps) {
         <TableBody>
           {issues.map((issue) => (
             <TableRow
-              key={issue.id}
+              key={issue.id + issue.title}
               className="border-b border-border hover:bg-secondary/30 cursor-pointer transition"
               onClick={() => openDetailModal(issue)}
             >
@@ -123,9 +130,9 @@ export function IssueTable({ issues, isLoading }: IssueTableProps) {
                       <AvatarImage src={issue.assignedTo.avatar} />
                       <AvatarFallback className="text-xs">
                         {issue.assignedTo.name
-                          .split(' ')
-                          .map(n => n[0])
-                          .join('')
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
                           .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -134,14 +141,21 @@ export function IssueTable({ issues, isLoading }: IssueTableProps) {
                     </span>
                   </div>
                 ) : (
-                  <span className="text-muted-foreground text-sm">Unassigned</span>
+                  <span className="text-muted-foreground text-sm">
+                    Unassigned
+                  </span>
                 )}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(issue.createdAt), { addSuffix: true })}
+                {formatDistanceToNow(new Date(issue.createdAt), {
+                  addSuffix: true,
+                })}
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="flex justify-end gap-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Button
                     variant="ghost"
                     size="sm"

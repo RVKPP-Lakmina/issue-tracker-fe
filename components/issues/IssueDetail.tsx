@@ -1,20 +1,21 @@
-'use client';
+"use client";
 
-import { Issue } from '@/lib/types';
-import { StatusBadge } from './StatusBadge';
-import { PriorityBadge } from './PriorityBadge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { useIssueStore } from '@/lib/store/issueStore';
-import { Edit, Trash2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Issue } from "@/lib/types";
+import { StatusBadge } from "./StatusBadge";
+import { PriorityBadge } from "./PriorityBadge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { useIssueStore } from "@/lib/store/issueStore";
+import { Edit, Trash2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 interface IssueDetailProps {
   issue: Issue;
 }
 
 export function IssueDetail({ issue }: IssueDetailProps) {
-  const { openEditModal, closeDetailModal, openDeleteConfirm } = useIssueStore();
+  const { openEditModal, closeDetailModal, openDeleteConfirm } =
+    useIssueStore();
 
   const handleEdit = () => {
     closeDetailModal();
@@ -27,15 +28,15 @@ export function IssueDetail({ issue }: IssueDetailProps) {
   };
 
   const createdByInitials = issue.createdBy.name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
     .toUpperCase();
 
   const assignedToInitials = issue.assignedTo?.name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
     .toUpperCase();
 
   return (
@@ -49,11 +50,15 @@ export function IssueDetail({ issue }: IssueDetailProps) {
       {/* Status and Priority */}
       <div className="flex flex-wrap gap-4">
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">STATUS</p>
+          <p className="text-xs font-medium text-muted-foreground mb-1">
+            STATUS
+          </p>
           <StatusBadge status={issue.status} />
         </div>
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-1">PRIORITY</p>
+          <p className="text-xs font-medium text-muted-foreground mb-1">
+            PRIORITY
+          </p>
           <PriorityBadge priority={issue.priority} />
         </div>
       </div>
@@ -61,7 +66,9 @@ export function IssueDetail({ issue }: IssueDetailProps) {
       {/* Description */}
       {issue.description && (
         <div>
-          <h3 className="text-sm font-semibold text-foreground mb-2">Description</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-2">
+            Description
+          </h3>
           <p className="text-sm text-foreground/80 whitespace-pre-wrap">
             {issue.description}
           </p>
@@ -71,7 +78,9 @@ export function IssueDetail({ issue }: IssueDetailProps) {
       {/* Metadata */}
       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">CREATED BY</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">
+            CREATED BY
+          </p>
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src={issue.createdBy.avatar} />
@@ -83,14 +92,18 @@ export function IssueDetail({ issue }: IssueDetailProps) {
               <p className="text-sm font-medium text-foreground">
                 {issue.createdBy.name}
               </p>
-              <p className="text-xs text-muted-foreground">{issue.createdBy.email}</p>
+              <p className="text-xs text-muted-foreground">
+                {issue.createdBy.email}
+              </p>
             </div>
           </div>
         </div>
 
         {issue.assignedTo && (
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">ASSIGNED TO</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">
+              ASSIGNED TO
+            </p>
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={issue.assignedTo.avatar} />
@@ -117,14 +130,20 @@ export function IssueDetail({ issue }: IssueDetailProps) {
           <p className="font-medium mb-1">Created</p>
           <p>
             {new Date(issue.createdAt).toLocaleDateString()} (
-            {formatDistanceToNow(new Date(issue.createdAt), { addSuffix: true })})
+            {formatDistanceToNow(new Date(issue.createdAt), {
+              addSuffix: true,
+            })}
+            )
           </p>
         </div>
         <div>
           <p className="font-medium mb-1">Last Updated</p>
           <p>
             {new Date(issue.updatedAt).toLocaleDateString()} (
-            {formatDistanceToNow(new Date(issue.updatedAt), { addSuffix: true })})
+            {formatDistanceToNow(new Date(issue.updatedAt), {
+              addSuffix: true,
+            })}
+            )
           </p>
         </div>
       </div>
