@@ -3,7 +3,7 @@ name: Production Deployment
 on:
   push:
     branches:
-      - production
+      - development
   workflow_dispatch:
 
 permissions:
@@ -47,13 +47,16 @@ jobs:
             NEXT_PUBLIC_API_TIMEOUT=${{ secrets.NEXT_PUBLIC_API_TIMEOUT }}
             NEXT_PUBLIC_TOKEN_KEY=${{ secrets.NEXT_PUBLIC_TOKEN_KEY }}
 
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key
+          chmod 600 ~/.ssh/ec2-key
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
+        run: |
+          ssh -i ~/.ssh/ec2-key -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ghcr.io/${{ github.repository }}:latest
             docker stop frontend || true
@@ -63,3 +66,4 @@ jobs:
               --restart unless-stopped \
               -p 3000:3000 \
               ghcr.io/${{ github.repository }}:latest
+          EOF
