@@ -69,6 +69,30 @@ export const useGetCurrentUser = (enabled = true) => {
   });
 };
 
+export const useUsers = (enabled = true) => {
+  return useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const response = await getApiClient().get<{
+        data: Array<{ id: string; name: string; email: string; role: string }>;
+        total: number;
+        page: number;
+        pageSize: number;
+        totalPages: number;
+      }>(API_ENDPOINTS.users.list);
+
+      // Map API response to User interface
+      return response.data.data.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      })) as User[];
+    },
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 // ============ ISSUE QUERIES ============
 
 export const useIssues = (filters?: IssueFilters) => {

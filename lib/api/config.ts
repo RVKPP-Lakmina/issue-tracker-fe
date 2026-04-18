@@ -17,6 +17,10 @@ export const API_ENDPOINTS = {
     logout: '/auth/logout',
     me: '/auth/me',
   },
+  // User endpoints
+  users: {
+    list: '/core/users',
+  },
   // Issue endpoints
   issues: {
     list: '/issues',
