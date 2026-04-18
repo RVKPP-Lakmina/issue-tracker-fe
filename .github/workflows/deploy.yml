@@ -50,9 +50,11 @@ jobs:
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key
           chmod 600 ~/.ssh/ec2-key
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          # Verify key loaded correctly
+          ssh-keygen -l -f ~/.ssh/ec2-key
 
       - name: Deploy to EC2
         run: |
