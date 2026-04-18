@@ -9,6 +9,7 @@ import {
   BarChart3,
   Bell,
   BookOpen,
+  GanttChart,
   Settings,
   CircleHelp,
 } from "lucide-react";
@@ -49,6 +50,11 @@ const mainNavItems = [
   //     href: "/issues/learn",
   //     icon: BookOpen,
   //   },
+  {
+    title: "Gantt Chart",
+    href: "/issues/gantt",
+    icon: GanttChart,
+  },
 ];
 
 const footerNavItems = [
@@ -110,7 +116,7 @@ export function SidebarContent({
             : "text-slate-700 hover:bg-slate-100"
         }`}
       >
-        <Icon className="h-5 w-5 flex-shrink-0" />
+        <Icon className="h-5 w-5 shrink-0" />
         <span className="text-sm">{item.title}</span>
       </Link>
     );
