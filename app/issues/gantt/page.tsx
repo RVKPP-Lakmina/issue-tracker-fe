@@ -12,8 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 export default function GanttPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const { isCreateModalOpen, openCreateModal, selectedIssue, openEditModal } =
-    useIssueStore();
+  const { openCreateModal, openEditModal } = useIssueStore();
   const { data: issuesData, isLoading } = useIssues();
 
   // Auth check
@@ -43,8 +42,7 @@ export default function GanttPage() {
         issues={issues}
         onCreateClick={openCreateModal}
         onIssueClick={(issue) => {
-          useIssueStore.setState({ selectedIssue: issue });
-          openEditModal();
+          openEditModal(issue);
         }}
       />
       <IssueModals />
