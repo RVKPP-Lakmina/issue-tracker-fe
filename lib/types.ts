@@ -27,6 +27,18 @@ export interface AuthResponse {
   user: User;
 }
 
+export type ProjectStatus = 'planning' | 'active' | 'on-hold' | 'closed';
+
+export interface Project {
+  id: string;
+  name: string;
+  code?: string;
+  description?: string;
+  status: ProjectStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Issue Status and Priority
 export type IssueStatus = 'open' | 'in-progress' | 'closed' | 'on-hold';
 export type IssuePriority = 'low' | 'medium' | 'high' | 'critical';
@@ -38,6 +50,10 @@ export interface Issue {
   description: string;
   status: IssueStatus;
   priority: IssuePriority;
+  projectId?: string;
+  project?: Project;
+  parentIssueId?: string;
+  parentIssue?: Pick<Issue, 'id' | 'title' | 'status'>;
   assignedTo?: User;
   createdBy: User;
   createdAt: string;
@@ -50,7 +66,50 @@ export interface IssueFormData {
   description: string;
   status: IssueStatus;
   priority: IssuePriority;
+  projectId?: string;
+  parentIssueId?: string;
   assignedToId?: string;
+}
+
+export interface ProjectFormData {
+  name: string;
+  code?: string;
+  description?: string;
+  status?: ProjectStatus;
+}
+
+export interface TimeEntry {
+  id: string;
+  issueId: string;
+  issue?: Pick<Issue, 'id' | 'title' | 'project' | 'projectId'>;
+  userId: string;
+  user?: Pick<User, 'id' | 'name' | 'email' | 'avatar'>;
+  date: string;
+  hours: number;
+  activity:
+  | 'requirements-definition'
+  | 'basic-design'
+  | 'implementation'
+  | 'review'
+  | 'api-test'
+  | 'system-test'
+  | 'acceptance-test'
+  | 'release'
+  | 'investigation'
+  | 'meeting'
+  | 'project-management'
+  | 'other';
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TimeEntryFormData {
+  issueId: string;
+  date: string;
+  hours: number;
+  activity: TimeEntry['activity'];
+  comment: string;
 }
 
 // API Response
@@ -74,7 +133,24 @@ export interface IssueFilters {
   search?: string;
   status?: IssueStatus[];
   priority?: IssuePriority;
+  projectId?: string;
   assignedToId?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface ProjectFilters {
+  status?: ProjectStatus;
+  search?: string;
+}
+
+export interface TimeEntryFilters {
+  userId?: string;
+  issueId?: string;
+  projectId?: string;
+  activity?: TimeEntry['activity'];
+  fromDate?: string;
+  toDate?: string;
   page?: number;
   pageSize?: number;
 }
