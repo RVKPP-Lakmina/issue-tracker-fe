@@ -28,4 +28,16 @@ export const API_ENDPOINTS = {
     update: (id: string) => `/issues/${id}`,
     delete: (id: string) => `/issues/${id}`,
   },
+  projects: {
+    list: '/issues/projects',
+    create: '/issues/projects',
+    update: (id: string) => `/issues/projects/${id}`,
+    delete: (id: string) => `/issues/projects/${id}`,
+  },
+  timeEntries: {
+    list: '/issues/time-entries',
+    create: '/issues/time-entries',
+    update: (id: string) => `/issues/time-entries/${id}`,
+    delete: (id: string) => `/issues/time-entries/${id}`,
+  },
 };
