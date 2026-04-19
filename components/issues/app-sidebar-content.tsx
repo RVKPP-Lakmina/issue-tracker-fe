@@ -2,13 +2,9 @@
 
 import Link from "next/link";
 import {
-  LayoutGrid,
   ListTodo,
   KanbanSquare,
-  Users,
   BarChart3,
-  Bell,
-  BookOpen,
   GanttChart,
   Settings,
   CircleHelp,
@@ -20,40 +16,25 @@ import {
 } from "@/components/ui/tooltip";
 
 const mainNavItems = [
+  // {
+  //   title: "All Issues",
+  //   href: "/issues",
+  //   icon: ListTodo,
+  // },
+  // {
+  //   title: "Projects",
+  //   href: "/issues/projects",
+  //   icon: KanbanSquare,
+  // },
+  // {
+  //   title: "Gantt Chart",
+  //   href: "/issues/gantt",
+  //   icon: GanttChart,
+  // },
   {
-    title: "All Issues",
-    href: "/issues",
-    icon: ListTodo,
-  },
-  //   {
-  //     title: "Projects",
-  //     href: "/issues/projects",
-  //     icon: KanbanSquare,
-  //   },
-  //   {
-  //     title: "Team",
-  //     href: "/issues/team",
-  //     icon: Users,
-  //   },
-  //   {
-  //     title: "Reports",
-  //     href: "/issues/reports",
-  //     icon: BarChart3,
-  //   },
-  //   {
-  //     title: "Alerts",
-  //     href: "/issues/alerts",
-  //     icon: Bell,
-  //   },
-  //   {
-  //     title: "Learn",
-  //     href: "/issues/learn",
-  //     icon: BookOpen,
-  //   },
-  {
-    title: "Gantt Chart",
-    href: "/issues/gantt",
-    icon: GanttChart,
+    title: "Spent Time",
+    href: "/issues/reports",
+    icon: BarChart3,
   },
 ];
 
@@ -110,6 +91,7 @@ export function SidebarContent({
     return (
       <Link
         href={item.href}
+        prefetch={false}
         className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-colors ${
           isActive
             ? "bg-blue-600 text-white font-semibold"
