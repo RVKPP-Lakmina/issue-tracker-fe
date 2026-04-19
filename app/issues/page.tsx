@@ -10,14 +10,20 @@ import { useIssues } from "@/lib/hooks/useApi";
 import { Plus, Download } from "lucide-react";
 
 export default function IssuesPage() {
-  const { openCreateModal, searchQuery, statusFilters, priorityFilter } =
-    useIssueStore();
+  const {
+    openCreateModal,
+    searchQuery,
+    statusFilters,
+    priorityFilter,
+    projectFilter,
+  } = useIssueStore();
 
   // Fetch issues with filters
   const { data: response, isLoading } = useIssues({
     search: searchQuery || undefined,
     status: statusFilters.length > 0 ? statusFilters : undefined,
     priority: priorityFilter || undefined,
+    projectId: projectFilter || undefined,
   });
 
   const issues = response?.data || [];
