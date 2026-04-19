@@ -6,7 +6,7 @@ import { PriorityBadge } from "./PriorityBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useIssueStore } from "@/lib/store/issueStore";
-import { Edit, Trash2 } from "lucide-react";
+import { Clock3, Edit, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface IssueDetailProps {
@@ -14,8 +14,12 @@ interface IssueDetailProps {
 }
 
 export function IssueDetail({ issue }: IssueDetailProps) {
-  const { openEditModal, closeDetailModal, openDeleteConfirm } =
-    useIssueStore();
+  const {
+    openEditModal,
+    closeDetailModal,
+    openDeleteConfirm,
+    openTimeLogModal,
+  } = useIssueStore();
 
   const handleEdit = () => {
     closeDetailModal();
@@ -77,6 +81,26 @@ export function IssueDetail({ issue }: IssueDetailProps) {
 
       {/* Metadata */}
       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-2">
+            PROJECT
+          </p>
+          <p className="text-sm text-foreground">
+            {issue.project?.name || "Not linked to a project"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-2">
+            PARENT TICKET
+          </p>
+          <p className="text-sm text-foreground">
+            {issue.parentIssue
+              ? `${issue.parentIssue.title} (${issue.parentIssue.status})`
+              : "No parent ticket"}
+          </p>
+        </div>
+
         <div>
           <p className="text-xs font-medium text-muted-foreground mb-2">
             CREATED BY
@@ -150,6 +174,10 @@ export function IssueDetail({ issue }: IssueDetailProps) {
 
       {/* Actions */}
       <div className="flex justify-end gap-2 border-t border-border pt-4">
+        <Button variant="secondary" onClick={() => openTimeLogModal(issue)}>
+          <Clock3 className="h-4 w-4 mr-2" />
+          Log Time
+        </Button>
         <Button
           variant="outline"
           onClick={handleDelete}
