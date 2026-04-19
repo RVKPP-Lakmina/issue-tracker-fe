@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   title: "Issue Tracker",
   description: "Modern Issue Tracking Application",
   icons: {
-    icon: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: "/favicon.svg",
+    apple: "/apple-icon.png",
   },
 };
 
@@ -21,11 +21,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isVercelDeployment = process.env.VERCEL === "1";
+
   return (
     <html lang="en" className="bg-background">
       <body className="font-sans antialiased">
         <Providers>{children}</Providers>
-        {process.env.NODE_ENV === "production" && <Analytics />}
+        {process.env.NODE_ENV === "production" && isVercelDeployment && (
+          <Analytics />
+        )}
       </body>
     </html>
   );
