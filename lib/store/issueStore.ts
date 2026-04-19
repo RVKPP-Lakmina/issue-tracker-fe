@@ -12,6 +12,7 @@ interface IssueState {
   isEditModalOpen: boolean;
   isDetailModalOpen: boolean;
   isDeleteConfirmOpen: boolean;
+  isTimeLogModalOpen: boolean;
 
   // Selected issue for editing/viewing
   selectedIssue: Issue | null;
@@ -20,6 +21,7 @@ interface IssueState {
   searchQuery: string;
   statusFilters: IssueStatus[];
   priorityFilter: IssuePriority | null;
+  projectFilter: string | null;
   assignedToFilter: string | null;
 
   // Pagination
@@ -38,10 +40,13 @@ interface IssueState {
   closeDetailModal: () => void;
   openDeleteConfirm: (issue: Issue) => void;
   closeDeleteConfirm: () => void;
+  openTimeLogModal: (issue: Issue) => void;
+  closeTimeLogModal: () => void;
 
   setSearchQuery: (query: string) => void;
   setStatusFilters: (statuses: IssueStatus[]) => void;
   setPriorityFilter: (priority: IssuePriority | null) => void;
+  setProjectFilter: (projectId: string | null) => void;
   setAssignedToFilter: (userId: string | null) => void;
   clearFilters: () => void;
 
@@ -59,6 +64,7 @@ export const useIssueStore = create<IssueState>((set) => ({
   isEditModalOpen: false,
   isDetailModalOpen: false,
   isDeleteConfirmOpen: false,
+  isTimeLogModalOpen: false,
 
   selectedIssue: null,
 
@@ -66,6 +72,7 @@ export const useIssueStore = create<IssueState>((set) => ({
   searchQuery: '',
   statusFilters: [],
   priorityFilter: null,
+  projectFilter: null,
   assignedToFilter: null,
 
   // Pagination
@@ -104,12 +111,19 @@ export const useIssueStore = create<IssueState>((set) => ({
   closeDeleteConfirm: () =>
     set({ isDeleteConfirmOpen: false, selectedIssue: null }),
 
+  openTimeLogModal: (issue) =>
+    set({ isTimeLogModalOpen: true, selectedIssue: issue }),
+  closeTimeLogModal: () =>
+    set({ isTimeLogModalOpen: false }),
+
   // Filter actions
   setSearchQuery: (query) => set({ searchQuery: query, currentPage: 1 }),
   setStatusFilters: (statuses) =>
     set({ statusFilters: statuses, currentPage: 1 }),
   setPriorityFilter: (priority) =>
     set({ priorityFilter: priority, currentPage: 1 }),
+  setProjectFilter: (projectId) =>
+    set({ projectFilter: projectId, currentPage: 1 }),
   setAssignedToFilter: (userId) =>
     set({ assignedToFilter: userId, currentPage: 1 }),
 
@@ -118,6 +132,7 @@ export const useIssueStore = create<IssueState>((set) => ({
       searchQuery: '',
       statusFilters: [],
       priorityFilter: null,
+      projectFilter: null,
       assignedToFilter: null,
       currentPage: 1,
     }),
