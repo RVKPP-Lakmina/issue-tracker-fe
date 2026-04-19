@@ -15,7 +15,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { IssueFormData, Issue } from "@/lib/types";
-import { useCreateIssue, useUpdateIssue, useUsers } from "@/lib/hooks/useApi";
+import {
+  useCreateIssue,
+  useUpdateIssue,
+  useUsers,
+  useProjects,
+  useIssues,
+} from "@/lib/hooks/useApi";
 import { useIssueStore } from "@/lib/store/issueStore";
 import { useAuthStore } from "@/lib/store/authStore";
 
@@ -27,6 +33,8 @@ const issueFormSchema = z.object({
   description: z.string().optional(),
   status: z.enum(["open", "in-progress", "closed", "on-hold"]),
   priority: z.enum(["low", "medium", "high", "critical"]),
+  projectId: z.string().optional(),
+  parentIssueId: z.string().optional(),
   assignedToId: z.string().optional(),
 });
 
@@ -41,8 +49,11 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
   const { closeCreateModal, closeEditModal } = useIssueStore();
   const { user: currentUser } = useAuthStore();
   const { data: users = [], isLoading: isUsersLoading } = useUsers();
+  const { data: projectsResponse, isLoading: isProjectsLoading } =
+    useProjects();
   const { mutate: createIssue, isPending: isCreating } = useCreateIssue();
   const { mutate: updateIssue, isPending: isUpdating } = useUpdateIssue();
+  const projects = projectsResponse?.data || [];
 
   const {
     register,
@@ -58,6 +69,8 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
       description: issue?.description || "",
       status: issue?.status || "open",
       priority: issue?.priority || "medium",
+      projectId: issue?.projectId || issue?.project?.id || "",
+      parentIssueId: issue?.parentIssueId || issue?.parentIssue?.id || "",
       assignedToId: issue?.assignedTo?.id || "",
     },
   });
@@ -68,14 +81,52 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
       description: issue?.description || "",
       status: issue?.status || "open",
       priority: issue?.priority || "medium",
+      projectId: issue?.projectId || issue?.project?.id || "",
+      parentIssueId: issue?.parentIssueId || issue?.parentIssue?.id || "",
       assignedToId: issue?.assignedTo?.id || "",
     });
   }, [issue, reset]);
 
+  const selectedProjectId = watch("projectId") || "";
+  const selectedParentIssueId = watch("parentIssueId") || "";
+
+  const { data: parentIssuesResponse, isLoading: isParentIssuesLoading } =
+    useIssues({
+      projectId: selectedProjectId || undefined,
+      pageSize: 200,
+    });
+
+  const parentIssues = (parentIssuesResponse?.data || []).filter(
+    (candidate) => candidate.id !== issue?.id,
+  );
+
+  const selectedProject = projects.find(
+    (project) => project.id === selectedProjectId,
+  );
+  const selectedParentIssue = parentIssues.find(
+    (parentIssue) => parentIssue.id === selectedParentIssueId,
+  );
+
+  const blockedByProject = !issue && selectedProject?.status === "closed";
+  const blockedByParent = !issue && selectedParentIssue?.status === "closed";
+  const blockedCreationReason = blockedByProject
+    ? "This project is closed. You cannot create new tickets under a closed project."
+    : blockedByParent
+      ? "This parent ticket is closed. You cannot create sub-tickets under a closed ticket."
+      : null;
+
   const onSubmit = (data: IssueFormDataSchema) => {
+    if (blockedCreationReason) {
+      return;
+    }
+
     const normalizedData: IssueFormData = {
       ...data,
       description: data.description ?? "",
+      projectId: data.projectId?.trim() ? data.projectId : undefined,
+      parentIssueId: data.parentIssueId?.trim()
+        ? data.parentIssueId
+        : undefined,
       assignedToId: data.assignedToId?.trim() ? data.assignedToId : undefined,
     };
 
@@ -103,6 +154,8 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
   const isPending = isCreating || isUpdating;
   const selectedStatus = watch("status");
   const selectedPriority = watch("priority");
+  const selectedProjectValue = watch("projectId") || "__NO_PROJECT__";
+  const selectedParentIssueValue = watch("parentIssueId") || "__NO_PARENT__";
   const selectedAssignedToId = watch("assignedToId") || "__UNASSIGNED__";
 
   return (
@@ -190,6 +243,93 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Project</label>
+          <Select
+            value={selectedProjectValue}
+            onValueChange={(value) => {
+              const nextProjectId = value === "__NO_PROJECT__" ? "" : value;
+              setValue("projectId", nextProjectId, {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+
+              // Reset parent issue when project changes.
+              setValue("parentIssueId", "", {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+            }}
+            disabled={isPending || isProjectsLoading}
+          >
+            <SelectTrigger className="bg-secondary/50">
+              <SelectValue
+                placeholder={
+                  isProjectsLoading ? "Loading projects..." : "Select project"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__NO_PROJECT__">No project</SelectItem>
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                  {project.status === "closed" ? " (Closed)" : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">
+            Parent Ticket
+          </label>
+          <Select
+            value={selectedParentIssueValue}
+            onValueChange={(value) =>
+              setValue(
+                "parentIssueId",
+                value === "__NO_PARENT__" ? "" : value,
+                {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                },
+              )
+            }
+            disabled={isPending || isParentIssuesLoading || !selectedProjectId}
+          >
+            <SelectTrigger className="bg-secondary/50">
+              <SelectValue
+                placeholder={
+                  !selectedProjectId
+                    ? "Select a project first"
+                    : isParentIssuesLoading
+                      ? "Loading tickets..."
+                      : "Select parent ticket"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__NO_PARENT__">No parent ticket</SelectItem>
+              {parentIssues.map((parentIssue) => (
+                <SelectItem key={parentIssue.id} value={parentIssue.id}>
+                  {parentIssue.title}
+                  {parentIssue.status === "closed" ? " (Closed)" : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {blockedCreationReason && (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {blockedCreationReason}
+        </div>
+      )}
+
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
           Assigned To
@@ -241,7 +381,7 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
         <Button
           type="submit"
           className="bg-primary hover:bg-primary/90"
-          disabled={isPending}
+          disabled={isPending || !!blockedCreationReason}
         >
           {isPending
             ? issue

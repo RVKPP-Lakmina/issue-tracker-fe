@@ -17,9 +17,9 @@ export default function GanttPage() {
 
   // Auth check
   useEffect(() => {
-    if (!isAuthenticated || !user) {
-      router.push("/signin");
-    }
+    // if (!isAuthenticated || !user) {
+    //   router.push("/signin");
+    // }
   }, [isAuthenticated, user, router]);
 
   if (!isAuthenticated || !user) {

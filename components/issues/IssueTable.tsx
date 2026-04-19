@@ -96,6 +96,8 @@ export function IssueTable({ issues, isLoading }: IssueTableProps) {
             <TableHead>Title</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Priority</TableHead>
+            <TableHead>Project</TableHead>
+            <TableHead>Parent</TableHead>
             <TableHead>Assigned To</TableHead>
             <TableHead>Created</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -122,6 +124,12 @@ export function IssueTable({ issues, isLoading }: IssueTableProps) {
               </TableCell>
               <TableCell>
                 <PriorityBadge priority={issue.priority} />
+              </TableCell>
+              <TableCell className="text-sm text-foreground">
+                {issue.project?.name || "-"}
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {issue.parentIssue?.title || "-"}
               </TableCell>
               <TableCell>
                 {issue.assignedTo ? (

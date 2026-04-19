@@ -14,6 +14,12 @@ import {
   PaginatedResponse,
   IssueFilters,
   User,
+  Project,
+  ProjectFormData,
+  ProjectFilters,
+  TimeEntry,
+  TimeEntryFormData,
+  TimeEntryFilters,
 } from '../types';
 import axios from 'axios';
 
@@ -90,6 +96,7 @@ export const useUsers = (enabled = true) => {
     },
     enabled,
     staleTime: 5 * 60 * 1000,
+    retry: 0,
   });
 };
 
@@ -99,9 +106,17 @@ export const useIssues = (filters?: IssueFilters) => {
   return useQuery({
     queryKey: ['issues', filters],
     queryFn: async () => {
+      const params = {
+        ...filters,
+        status:
+          filters?.status && filters.status.length > 0
+            ? filters.status.join(',')
+            : undefined,
+      };
+
       const response = await getApiClient().get<PaginatedResponse<Issue>>(
         API_ENDPOINTS.issues.list,
-        { params: filters }
+        { params }
       );
       return response.data;
     },
@@ -185,6 +200,73 @@ export const useBulkDeleteIssues = () => {
       );
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+    },
+  });
+};
+
+// ============ PROJECT QUERIES ============
+
+export const useProjects = (filters?: ProjectFilters) => {
+  return useQuery({
+    queryKey: ['projects', filters],
+    queryFn: async () => {
+      const response = await getApiClient().get<PaginatedResponse<Project>>(
+        API_ENDPOINTS.projects.list,
+        { params: filters }
+      );
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 0,
+  });
+};
+
+export const useCreateProject = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: ProjectFormData) => {
+      const response = await getApiClient().post<Project>(
+        API_ENDPOINTS.projects.create,
+        payload
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+};
+
+// ============ TIME ENTRY QUERIES ============
+
+export const useTimeEntries = (filters?: TimeEntryFilters) => {
+  return useQuery({
+    queryKey: ['time-entries', filters],
+    queryFn: async () => {
+      const response = await getApiClient().get<PaginatedResponse<TimeEntry>>(
+        API_ENDPOINTS.timeEntries.list,
+        { params: filters }
+      );
+      return response.data;
+    },
+    staleTime: 60 * 1000,
+    retry: 0,
+  });
+};
+
+export const useCreateTimeEntry = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: TimeEntryFormData) => {
+      const response = await getApiClient().post<TimeEntry>(
+        API_ENDPOINTS.timeEntries.create,
+        payload
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['time-entries'] });
       queryClient.invalidateQueries({ queryKey: ['issues'] });
     },
   });

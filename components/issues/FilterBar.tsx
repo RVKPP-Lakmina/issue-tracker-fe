@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Search, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useProjects } from "@/lib/hooks/useApi";
 
 const statusOptions: IssueStatus[] = [
   "open",
@@ -27,11 +28,16 @@ export function FilterBar() {
     searchQuery,
     statusFilters,
     priorityFilter,
+    projectFilter,
     setSearchQuery,
     setStatusFilters,
     setPriorityFilter,
+    setProjectFilter,
     clearFilters,
   } = useIssueStore();
+  const { data: projectsResponse, isLoading: isProjectsLoading } =
+    useProjects();
+  const projects = projectsResponse?.data || [];
 
   const [localSearch, setLocalSearch] = useState(searchQuery);
 
@@ -56,7 +62,7 @@ export function FilterBar() {
   );
 
   const hasActiveFilters =
-    searchQuery || statusFilters.length > 0 || priorityFilter;
+    searchQuery || statusFilters.length > 0 || priorityFilter || projectFilter;
 
   return (
     <div className="space-y-4 p-6 bg-card border border-border rounded-lg">
@@ -72,7 +78,7 @@ export function FilterBar() {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Status Filter */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground">Status</label>
@@ -111,6 +117,33 @@ export function FilterBar() {
               {priorityOptions.map((priority) => (
                 <SelectItem key={priority} value={priority}>
                   {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Project</label>
+          <Select
+            value={projectFilter || "__ALL_PROJECTS__"}
+            onValueChange={(value) =>
+              setProjectFilter(value === "__ALL_PROJECTS__" ? null : value)
+            }
+            disabled={isProjectsLoading}
+          >
+            <SelectTrigger className="bg-secondary/50">
+              <SelectValue
+                placeholder={
+                  isProjectsLoading ? "Loading projects..." : "All projects"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__ALL_PROJECTS__">All projects</SelectItem>
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
                 </SelectItem>
               ))}
             </SelectContent>

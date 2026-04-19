@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useIssueStore } from '@/lib/store/issueStore';
+import { useIssueStore } from "@/lib/store/issueStore";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,10 +16,11 @@ import {
   AlertDialogDescription,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { IssueForm } from './IssueForm';
-import { IssueDetail } from './IssueDetail';
-import { useDeleteIssue } from '@/lib/hooks/useApi';
+} from "@/components/ui/alert-dialog";
+import { IssueForm } from "./IssueForm";
+import { IssueDetail } from "./IssueDetail";
+import { TimeEntryForm } from "./TimeEntryForm";
+import { useDeleteIssue } from "@/lib/hooks/useApi";
 
 export function IssueModals() {
   const {
@@ -27,11 +28,13 @@ export function IssueModals() {
     isEditModalOpen,
     isDetailModalOpen,
     isDeleteConfirmOpen,
+    isTimeLogModalOpen,
     selectedIssue,
     closeCreateModal,
     closeEditModal,
     closeDetailModal,
     closeDeleteConfirm,
+    closeTimeLogModal,
   } = useIssueStore();
 
   const { mutate: deleteIssue } = useDeleteIssue();
@@ -90,8 +93,8 @@ export function IssueModals() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Issue</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{selectedIssue?.title}&quot;?
-              This action cannot be undone.
+              Are you sure you want to delete &quot;{selectedIssue?.title}
+              &quot;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex justify-end gap-2">
@@ -105,6 +108,19 @@ export function IssueModals() {
           </div>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Time Log Modal */}
+      <Dialog open={isTimeLogModalOpen} onOpenChange={closeTimeLogModal}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Log Spent Time</DialogTitle>
+            <DialogDescription>
+              Add time spent for this ticket.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedIssue && <TimeEntryForm issueId={selectedIssue.id} />}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
