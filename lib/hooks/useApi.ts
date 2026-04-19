@@ -99,9 +99,17 @@ export const useIssues = (filters?: IssueFilters) => {
   return useQuery({
     queryKey: ['issues', filters],
     queryFn: async () => {
+      const params = {
+        ...filters,
+        status:
+          filters?.status && filters.status.length > 0
+            ? filters.status.join(',')
+            : undefined,
+      };
+
       const response = await getApiClient().get<PaginatedResponse<Issue>>(
         API_ENDPOINTS.issues.list,
-        { params: filters }
+        { params }
       );
       return response.data;
     },
