@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const TOKEN_KEY = process.env.NEXT_PUBLIC_TOKEN_KEY || 'auth_token';
+const TOKEN_FOOTPRINT_COOKIE = 'token_fp';
 const PROTECTED_ROUTES = ['/issues'];
 const PUBLIC_ROUTES = ['/signin', '/signup'];
 
 export function proxy(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
-    const token = request.cookies.get(TOKEN_KEY)?.value;
+    const tokenFootprint = request.cookies.get(TOKEN_FOOTPRINT_COOKIE)?.value;
 
     const isProtectedRoute = PROTECTED_ROUTES.some(route =>
         pathname.startsWith(route)
@@ -16,11 +16,11 @@ export function proxy(request: NextRequest) {
         pathname.startsWith(route)
     );
 
-    if (isProtectedRoute && !token) {
+    if (isProtectedRoute && !tokenFootprint) {
         return NextResponse.redirect(new URL('/signin', request.url));
     }
 
-    if (isPublicRoute && token) {
+    if (isPublicRoute && tokenFootprint) {
         return NextResponse.redirect(new URL('/issues', request.url));
     }
 
