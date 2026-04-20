@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -16,8 +17,63 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Mail, MessageSquare, BookOpen, Zap } from "lucide-react";
+import { useDebounce } from "../../../lib/hooks/useDebounce";
+
+const faqItems = [
+  {
+    id: "item-1",
+    question: "How do I create a new issue?",
+    answer:
+      'Navigate to the Issues page and click the "New Issue" button. Fill in the required details including title, description, priority, and status, then click "Create Issue".',
+  },
+  {
+    id: "item-2",
+    question: "Can I assign issues to team members?",
+    answer:
+      "Yes, you can assign issues to team members by clicking the issue and selecting an assignee from the dropdown menu. You can only assign to users in your workspace.",
+  },
+  {
+    id: "item-3",
+    question: "How do I filter issues by priority?",
+    answer:
+      "Use the Filter Bar at the top of the Issues page to filter by priority level. You can select one or multiple priority levels (Low, Medium, High, Urgent).",
+  },
+  {
+    id: "item-4",
+    question: "What status options are available?",
+    answer:
+      "Issues can have the following statuses: Open, In Progress, In Review, and Closed. You can update the status from the issue detail view or directly from the table.",
+  },
+  {
+    id: "item-5",
+    question: "How do I export issue data?",
+    answer:
+      "Currently, you can view all issues in the table format. Future releases will include export functionality for CSV and PDF formats.",
+  },
+  {
+    id: "item-6",
+    question: "Is my data secure?",
+    answer:
+      "Yes, all data is encrypted in transit using HTTPS. Your authentication tokens are securely stored and validated on every request.",
+  },
+];
 
 export default function HelpPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  const normalizedQuery = debouncedSearchQuery.trim().toLowerCase();
+  const filteredFaqItems = faqItems.filter((item) => {
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    return (
+      item.question.toLowerCase().includes(normalizedQuery) ||
+      item.answer.toLowerCase().includes(normalizedQuery)
+    );
+  });
+
   return (
     <main className="flex-1 overflow-auto p-6 md:p-8">
       <div className="max-w-4xl">
@@ -29,7 +85,7 @@ export default function HelpPage() {
         </div>
 
         {/* Search */}
-        <Card className="mb-8 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+        <Card className="mb-8 bg-linear-to-r from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="pt-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
@@ -38,6 +94,8 @@ export default function HelpPage() {
               <Input
                 placeholder="Search for topics, issues, or keywords..."
                 className="bg-background"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
               />
             </div>
           </CardContent>
@@ -123,64 +181,20 @@ export default function HelpPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="item-1">
-                <AccordionTrigger>
-                  How do I create a new issue?
-                </AccordionTrigger>
-                <AccordionContent>
-                  Navigate to the Issues page and click the "New Issue" button.
-                  Fill in the required details including title, description,
-                  priority, and status, then click "Create Issue".
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-2">
-                <AccordionTrigger>
-                  Can I assign issues to team members?
-                </AccordionTrigger>
-                <AccordionContent>
-                  Yes, you can assign issues to team members by clicking the
-                  issue and selecting an assignee from the dropdown menu. You
-                  can only assign to users in your workspace.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-3">
-                <AccordionTrigger>
-                  How do I filter issues by priority?
-                </AccordionTrigger>
-                <AccordionContent>
-                  Use the Filter Bar at the top of the Issues page to filter by
-                  priority level. You can select one or multiple priority levels
-                  (Low, Medium, High, Urgent).
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-4">
-                <AccordionTrigger>
-                  What status options are available?
-                </AccordionTrigger>
-                <AccordionContent>
-                  Issues can have the following statuses: Open, In Progress, In
-                  Review, and Closed. You can update the status from the issue
-                  detail view or directly from the table.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-5">
-                <AccordionTrigger>How do I export issue data?</AccordionTrigger>
-                <AccordionContent>
-                  Currently, you can view all issues in the table format. Future
-                  releases will include export functionality for CSV and PDF
-                  formats.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-6">
-                <AccordionTrigger>Is my data secure?</AccordionTrigger>
-                <AccordionContent>
-                  Yes, all data is encrypted in transit using HTTPS. Your
-                  authentication tokens are securely stored and validated on
-                  every request.
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            {filteredFaqItems.length > 0 ? (
+              <Accordion type="single" collapsible className="w-full">
+                {filteredFaqItems.map((item) => (
+                  <AccordionItem key={item.id} value={item.id}>
+                    <AccordionTrigger>{item.question}</AccordionTrigger>
+                    <AccordionContent>{item.answer}</AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            ) : (
+              <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
+                No help articles match your search.
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
