@@ -15,11 +15,10 @@ export default function GanttPage() {
   const { openCreateModal, openEditModal } = useIssueStore();
   const { data: issuesData, isLoading } = useIssues();
 
-  // Auth check
   useEffect(() => {
-    // if (!isAuthenticated || !user) {
-    //   router.push("/signin");
-    // }
+    if (!isAuthenticated || !user) {
+      router.push("/signin");
+    }
   }, [isAuthenticated, user, router]);
 
   if (!isAuthenticated || !user) {
