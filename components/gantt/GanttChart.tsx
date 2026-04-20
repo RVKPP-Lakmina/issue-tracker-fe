@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { StatusBadge } from "@/components/issues/StatusBadge";
 import { PriorityBadge } from "@/components/issues/PriorityBadge";
+import PageWrapper from "../PageWrapper";
 
 interface GanttChartProps {
   issues: Issue[];
@@ -116,21 +117,16 @@ export function GanttChart({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Gantt Chart</h1>
-          <p className="text-sm text-muted-foreground">
-            Timeline view of all issues and tasks
-          </p>
-        </div>
+    <PageWrapper
+      title="Gantt Chart"
+      description="Timeline view of all issues and tasks"
+      headerRightContent={
         <Button onClick={onCreateClick} className="gap-2">
           <Plus className="h-4 w-4" />
           Create Issue
         </Button>
-      </div>
-
+      }
+    >
       {/* Date Navigation */}
       <div className="flex items-center justify-between bg-secondary/50 rounded-lg p-4">
         <Button variant="outline" size="sm" onClick={handlePrevWeek}>
@@ -264,6 +260,6 @@ export function GanttChart({
           </div>
         ))}
       </div>
-    </div>
+    </PageWrapper>
   );
 }
