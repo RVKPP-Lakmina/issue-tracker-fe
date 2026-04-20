@@ -22,6 +22,7 @@ import {
   TimeEntryFilters,
 } from '../types';
 import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
 
 // ============ AUTH QUERIES ============
 
@@ -51,11 +52,18 @@ export const useSignUp = () => {
 
 export const useLogout = () => {
   const queryClient = useQueryClient();
+  const logout = useAuthStore((state) => state.logout);
+
   return useMutation({
     mutationFn: async () => {
       await getApiClient().post(API_ENDPOINTS.auth.logout);
     },
     onSuccess: () => {
+      logout();
+      queryClient.clear();
+    },
+    onError: () => {
+      logout();
       queryClient.clear();
     },
   });
