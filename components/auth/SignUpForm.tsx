@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useSignUp } from "@/lib/hooks/useApi";
-import { setAuthToken } from "@/lib/auth/token";
 import Link from "next/link";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 
@@ -30,7 +29,7 @@ type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export function SignUpForm() {
   const router = useRouter();
-  const { setUser, setIsAuthenticated } = useAuthStore();
+  const { setUser, setAccessToken } = useAuthStore();
   const { mutate: signUp, isPending } = useSignUp();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -60,11 +59,8 @@ export function SignUpForm() {
       },
       {
         onSuccess: (response) => {
-          // Store token
-          setAuthToken(response.token);
-          // Update auth state
+          setAccessToken(response.token);
           setUser(response.user);
-          setIsAuthenticated(true);
           router.push("/issues");
         },
         onError: (error: any) => {
