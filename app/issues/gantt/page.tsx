@@ -11,17 +11,17 @@ import { Spinner } from "@/components/ui/spinner";
 
 export default function GanttPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuthStore();
   const { openCreateModal, openEditModal } = useIssueStore();
   const { data: issuesData, isLoading } = useIssues();
 
   useEffect(() => {
-    if (!isAuthenticated || !user) {
+    if (!isAuthLoading && (!isAuthenticated || !user)) {
       router.push("/signin");
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, isAuthLoading, user, router]);
 
-  if (!isAuthenticated || !user) {
+  if (isAuthLoading || !isAuthenticated || !user) {
     return null;
   }
 
