@@ -14,6 +14,7 @@ import {
 import { Search, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useProjects } from "@/lib/hooks/useApi";
+import { useDebounce } from "../../lib/hooks/useDebounce";
 
 const statusOptions: IssueStatus[] = [
   "open",
@@ -40,15 +41,15 @@ export function FilterBar() {
   const projects = projectsResponse?.data || [];
 
   const [localSearch, setLocalSearch] = useState(searchQuery);
+  const debouncedSearch = useDebounce(localSearch, 300);
 
-  // Debounce search
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearchQuery(localSearch);
-    }, 300);
+    setSearchQuery(debouncedSearch);
+  }, [debouncedSearch, setSearchQuery]);
 
-    return () => clearTimeout(timer);
-  }, [localSearch, setSearchQuery]);
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+  }, [searchQuery]);
 
   const toggleStatus = useCallback(
     (status: IssueStatus) => {

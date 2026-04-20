@@ -3,16 +3,11 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useProjects, useTimeEntries, useUsers } from "@/lib/hooks/useApi";
 import { Download, Clock3 } from "lucide-react";
+import PageWrapper from "@/components/PageWrapper";
+import { SelectField } from "@/components/ui/select-field";
 
 const allOption = "__ALL__";
 
@@ -96,70 +91,56 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <Clock3 className="h-8 w-8" />
-            Spent Time
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Track and report time spent by all users.
-          </p>
-        </div>
-
+    <PageWrapper
+      title="Reports"
+      description="Generate detailed reports on time spent by users across projects and activities."
+      headerRightContent={
         <Button onClick={handleExportCsv} variant="outline" className="gap-2">
           <Download className="h-4 w-4" />
           Export CSV
         </Button>
-      </div>
-
+      }
+    >
       <Card>
         <CardHeader>
           <CardTitle>Filters</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-          <Select value={userId} onValueChange={setUserId}>
-            <SelectTrigger>
-              <SelectValue placeholder="All users" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={allOption}>All users</SelectItem>
-              {users.map((user) => (
-                <SelectItem key={user.id} value={user.id}>
-                  {user.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <SelectField
+            value={userId}
+            onValueChange={setUserId}
+            placeholder="All users"
+            options={[
+              { value: allOption, label: "All users" },
+              ...users.map((user) => ({ value: user.id, label: user.name })),
+            ]}
+          />
 
-          <Select value={projectId} onValueChange={setProjectId}>
-            <SelectTrigger>
-              <SelectValue placeholder="All projects" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={allOption}>All projects</SelectItem>
-              {projects.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <SelectField
+            value={projectId}
+            onValueChange={setProjectId}
+            placeholder="All projects"
+            options={[
+              { value: allOption, label: "All projects" },
+              ...projects.map((project) => ({
+                value: project.id,
+                label: project.name,
+              })),
+            ]}
+          />
 
-          <Select value={activity} onValueChange={setActivity}>
-            <SelectTrigger>
-              <SelectValue placeholder="All activities" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={allOption}>All activities</SelectItem>
-              {activityOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <SelectField
+            value={activity}
+            onValueChange={setActivity}
+            placeholder="All activities"
+            options={[
+              { value: allOption, label: "All activities" },
+              ...activityOptions.map((option) => ({
+                value: option.value,
+                label: option.label,
+              })),
+            ]}
+          />
 
           <Input
             type="date"
@@ -237,6 +218,6 @@ export default function ReportsPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageWrapper>
   );
 }

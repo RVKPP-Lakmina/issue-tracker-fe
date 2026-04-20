@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Clock } from "lucide-react";
+import PageWrapper from "@/components/PageWrapper";
 
 const alerts = [
   {
@@ -43,17 +44,10 @@ const alerts = [
 
 export default function AlertsPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-          <Bell className="h-8 w-8" />
-          Alerts & Notifications
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Stay updated with important notifications
-        </p>
-      </div>
-
+    <PageWrapper
+      title="Alerts & Notifications"
+      description="Stay updated with important notifications"
+    >
       <Card>
         <CardHeader>
           <CardTitle>Recent Alerts</CardTitle>
@@ -97,6 +91,6 @@ export default function AlertsPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageWrapper>
   );
 }

@@ -12,16 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { KanbanSquare, Plus } from "lucide-react";
 import { useCreateProject, useProjects } from "@/lib/hooks/useApi";
 import { ProjectFormData, ProjectStatus } from "@/lib/types";
+import PageWrapper from "@/components/PageWrapper";
+import { SelectField } from "@/components/ui/select-field";
 
 const statusOptions: ProjectStatus[] = [
   "planning",
@@ -79,18 +74,10 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-          <KanbanSquare className="h-8 w-8" />
-          Projects
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Initialize projects first. Tickets and sub-tickets can be added under
-          active projects.
-        </p>
-      </div>
-
+    <PageWrapper
+      title="Projects"
+      description="Initialize projects first. Tickets and sub-tickets can be added under active projects."
+    >
       <Card>
         <CardHeader>
           <CardTitle>Create Project</CardTitle>
@@ -128,26 +115,19 @@ export default function ProjectsPage() {
             disabled={isPending}
           />
 
-          <div className="max-w-sm">
-            <Select
-              value={form.status || "active"}
-              onValueChange={(value) =>
-                setForm((prev) => ({ ...prev, status: value as ProjectStatus }))
-              }
-              disabled={isPending}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SelectField
+            containerClassName="max-w-sm"
+            value={form.status || "active"}
+            onValueChange={(value) =>
+              setForm((prev) => ({ ...prev, status: value as ProjectStatus }))
+            }
+            options={statusOptions.map((status) => ({
+              value: status,
+              label: status,
+            }))}
+            placeholder="Select status"
+            disabled={isPending}
+          />
 
           <div className="flex justify-end">
             <Button
@@ -170,8 +150,8 @@ export default function ProjectsPage() {
             </CardContent>
           </Card>
         ) : projects.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-sm text-muted-foreground">
+          <Card className="col-span-3">
+            <CardContent className="text-center text-sm text-muted-foreground">
               No projects yet. Create your first project.
             </CardContent>
           </Card>
@@ -206,6 +186,6 @@ export default function ProjectsPage() {
           ))
         )}
       </div>
-    </div>
+    </PageWrapper>
   );
 }

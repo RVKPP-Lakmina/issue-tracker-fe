@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useSignIn } from "@/lib/hooks/useApi";
-import { setAuthToken } from "@/lib/auth/token";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -23,7 +22,7 @@ type SignInFormData = z.infer<typeof signInSchema>;
 
 export function SignInForm() {
   const router = useRouter();
-  const { setUser, setIsAuthenticated } = useAuthStore();
+  const { setUser, setAccessToken } = useAuthStore();
   const { mutate: signIn, isPending } = useSignIn();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,11 +39,8 @@ export function SignInForm() {
     setError(null);
     signIn(data, {
       onSuccess: (response) => {
-        // Store token
-        setAuthToken(response.token);
-        // Update auth state
+        setAccessToken(response.token);
         setUser(response.user);
-        setIsAuthenticated(true);
         router.push("/issues");
       },
       onError: (error: any) => {

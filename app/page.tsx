@@ -3,23 +3,20 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
-import { getAuthToken } from "@/lib/auth/token";
 
 export default function Home() {
   const router = useRouter();
-  const { initializeAuth } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuthStore();
 
   useEffect(() => {
-    initializeAuth();
-    if (typeof window !== "undefined") {
-      const token = getAuthToken();
-      if (token) {
+    if (!isLoading) {
+      if (isAuthenticated) {
         router.replace("/issues");
       } else {
         router.replace("/signin");
       }
     }
-  }, [router, initializeAuth]);
+  }, [isAuthenticated, isLoading, router]);
 
   return null;
 }

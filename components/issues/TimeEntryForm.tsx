@@ -5,13 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SelectField } from "@/components/ui/select-field";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateTimeEntry } from "@/lib/hooks/useApi";
 import { TimeEntryFormData } from "@/lib/types";
@@ -124,35 +118,22 @@ export function TimeEntryForm({ issueId, onSuccess }: TimeEntryFormProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">
-          Activity *
-        </label>
-        <Select
-          value={selectedActivity}
-          onValueChange={(value) =>
-            setValue("activity", value as TimeEntryFormSchema["activity"], {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
-          disabled={isPending}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select activity" />
-          </SelectTrigger>
-          <SelectContent>
-            {activityOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.activity && (
-          <p className="text-xs text-destructive">{errors.activity.message}</p>
-        )}
-      </div>
+      <SelectField
+        label="Activity *"
+        value={selectedActivity}
+        onValueChange={(value) =>
+          setValue("activity", value as TimeEntryFormSchema["activity"], {
+            shouldDirty: true,
+            shouldValidate: true,
+          })
+        }
+        options={activityOptions}
+        placeholder="Select activity"
+        disabled={isPending}
+      />
+      {errors.activity && (
+        <p className="text-xs text-destructive">{errors.activity.message}</p>
+      )}
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">Comment *</label>

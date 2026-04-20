@@ -7,13 +7,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SelectField } from "@/components/ui/select-field";
 import { IssueFormData, Issue } from "@/lib/types";
 import {
   useCreateIssue,
@@ -93,7 +87,7 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
   const { data: parentIssuesResponse, isLoading: isParentIssuesLoading } =
     useIssues({
       projectId: selectedProjectId || undefined,
-      pageSize: 200,
+      pageSize: 100,
     });
 
   const parentIssues = (parentIssuesResponse?.data || []).filter(
@@ -192,136 +186,101 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Status</label>
-          <Select
-            value={selectedStatus}
-            onValueChange={(value) =>
-              setValue("status", value as IssueFormDataSchema["status"], {
-                shouldDirty: true,
-                shouldValidate: true,
-              })
-            }
-            disabled={isPending}
-          >
-            <SelectTrigger className="bg-secondary/50">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="open">Open</SelectItem>
-              <SelectItem value="in-progress">In Progress</SelectItem>
-              <SelectItem value="closed">Closed</SelectItem>
-              <SelectItem value="on-hold">On Hold</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SelectField
+          label="Status"
+          value={selectedStatus}
+          onValueChange={(value) =>
+            setValue("status", value as IssueFormDataSchema["status"], {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+          options={[
+            { value: "open", label: "Open" },
+            { value: "in-progress", label: "In Progress" },
+            { value: "closed", label: "Closed" },
+            { value: "on-hold", label: "On Hold" },
+          ]}
+          disabled={isPending}
+          triggerClassName="bg-secondary/50"
+        />
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">
-            Priority
-          </label>
-          <Select
-            value={selectedPriority}
-            onValueChange={(value) =>
-              setValue("priority", value as IssueFormDataSchema["priority"], {
-                shouldDirty: true,
-                shouldValidate: true,
-              })
-            }
-            disabled={isPending}
-          >
-            <SelectTrigger className="bg-secondary/50">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low">Low</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="critical">Critical</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SelectField
+          label="Priority"
+          value={selectedPriority}
+          onValueChange={(value) =>
+            setValue("priority", value as IssueFormDataSchema["priority"], {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+          options={[
+            { value: "low", label: "Low" },
+            { value: "medium", label: "Medium" },
+            { value: "high", label: "High" },
+            { value: "critical", label: "Critical" },
+          ]}
+          disabled={isPending}
+          triggerClassName="bg-secondary/50"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Project</label>
-          <Select
-            value={selectedProjectValue}
-            onValueChange={(value) => {
-              const nextProjectId = value === "__NO_PROJECT__" ? "" : value;
-              setValue("projectId", nextProjectId, {
-                shouldDirty: true,
-                shouldValidate: true,
-              });
+        <SelectField
+          label="Project"
+          value={selectedProjectValue}
+          onValueChange={(value) => {
+            const nextProjectId = value === "__NO_PROJECT__" ? "" : value;
+            setValue("projectId", nextProjectId, {
+              shouldDirty: true,
+              shouldValidate: true,
+            });
 
-              // Reset parent issue when project changes.
-              setValue("parentIssueId", "", {
-                shouldDirty: true,
-                shouldValidate: true,
-              });
-            }}
-            disabled={isPending || isProjectsLoading}
-          >
-            <SelectTrigger className="bg-secondary/50">
-              <SelectValue
-                placeholder={
-                  isProjectsLoading ? "Loading projects..." : "Select project"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__NO_PROJECT__">No project</SelectItem>
-              {projects.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                  {project.status === "closed" ? " (Closed)" : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            setValue("parentIssueId", "", {
+              shouldDirty: true,
+              shouldValidate: true,
+            });
+          }}
+          disabled={isPending || isProjectsLoading}
+          placeholder={
+            isProjectsLoading ? "Loading projects..." : "Select project"
+          }
+          triggerClassName="bg-secondary/50"
+          options={[
+            { value: "__NO_PROJECT__", label: "No project" },
+            ...projects.map((project) => ({
+              value: project.id,
+              label: `${project.name}${project.status === "closed" ? " (Closed)" : ""}`,
+            })),
+          ]}
+        />
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">
-            Parent Ticket
-          </label>
-          <Select
-            value={selectedParentIssueValue}
-            onValueChange={(value) =>
-              setValue(
-                "parentIssueId",
-                value === "__NO_PARENT__" ? "" : value,
-                {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                },
-              )
-            }
-            disabled={isPending || isParentIssuesLoading || !selectedProjectId}
-          >
-            <SelectTrigger className="bg-secondary/50">
-              <SelectValue
-                placeholder={
-                  !selectedProjectId
-                    ? "Select a project first"
-                    : isParentIssuesLoading
-                      ? "Loading tickets..."
-                      : "Select parent ticket"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__NO_PARENT__">No parent ticket</SelectItem>
-              {parentIssues.map((parentIssue) => (
-                <SelectItem key={parentIssue.id} value={parentIssue.id}>
-                  {parentIssue.title}
-                  {parentIssue.status === "closed" ? " (Closed)" : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <SelectField
+          label="Parent Ticket"
+          value={selectedParentIssueValue}
+          onValueChange={(value) =>
+            setValue("parentIssueId", value === "__NO_PARENT__" ? "" : value, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+          disabled={isPending || isParentIssuesLoading || !selectedProjectId}
+          placeholder={
+            !selectedProjectId
+              ? "Select a project first"
+              : isParentIssuesLoading
+                ? "Loading tickets..."
+                : "Select parent ticket"
+          }
+          triggerClassName="bg-secondary/50"
+          options={[
+            { value: "__NO_PARENT__", label: "No parent ticket" },
+            ...parentIssues.map((parentIssue) => ({
+              value: parentIssue.id,
+              label: `${parentIssue.title}${parentIssue.status === "closed" ? " (Closed)" : ""}`,
+            })),
+          ]}
+        />
       </div>
 
       {blockedCreationReason && (
@@ -330,38 +289,26 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
         </div>
       )}
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">
-          Assigned To
-        </label>
-        <Select
-          value={selectedAssignedToId}
-          onValueChange={(value) =>
-            setValue("assignedToId", value === "__UNASSIGNED__" ? "" : value, {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
-          disabled={isPending || isUsersLoading}
-        >
-          <SelectTrigger className="bg-secondary/50">
-            <SelectValue
-              placeholder={
-                isUsersLoading ? "Loading users..." : "Select assignee"
-              }
-            />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__UNASSIGNED__">Unassigned</SelectItem>
-            {users.map((user) => (
-              <SelectItem key={user.id} value={user.id}>
-                {user.name}
-                {currentUser?.id === user.id ? " (ME)" : ""}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <SelectField
+        label="Assigned To"
+        value={selectedAssignedToId}
+        onValueChange={(value) =>
+          setValue("assignedToId", value === "__UNASSIGNED__" ? "" : value, {
+            shouldDirty: true,
+            shouldValidate: true,
+          })
+        }
+        disabled={isPending || isUsersLoading}
+        placeholder={isUsersLoading ? "Loading users..." : "Select assignee"}
+        triggerClassName="bg-secondary/50"
+        options={[
+          { value: "__UNASSIGNED__", label: "Unassigned" },
+          ...users.map((user) => ({
+            value: user.id,
+            label: `${user.name}${currentUser?.id === user.id ? " (ME)" : ""}`,
+          })),
+        ]}
+      />
 
       <div className="flex justify-end gap-2 pt-4 border-t border-border">
         <Button

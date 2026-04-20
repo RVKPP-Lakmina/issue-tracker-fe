@@ -1,10 +1,13 @@
-'use client';
+"use client";
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode, useState } from 'react';
-import { createApiClient } from '@/lib/api/client';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactNode, useEffect, useState } from "react";
+import { createApiClient } from "@/lib/api/client";
+import { useAuthStore } from "@/lib/store/authStore";
 
 export function Providers({ children }: { children: ReactNode }) {
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -19,7 +22,7 @@ export function Providers({ children }: { children: ReactNode }) {
             retry: 1,
           },
         },
-      })
+      }),
   );
 
   // Initialize API client
@@ -27,9 +30,11 @@ export function Providers({ children }: { children: ReactNode }) {
     createApiClient();
   });
 
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 }
