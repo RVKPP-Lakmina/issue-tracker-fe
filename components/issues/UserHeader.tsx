@@ -13,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { clearAuthToken } from "@/lib/auth/token";
 import { useEffect, useState } from "react";
 
 export function UserHeader() {
@@ -31,7 +30,10 @@ export function UserHeader() {
     signOut(undefined, {
       onSuccess: () => {
         logout();
-        clearAuthToken();
+        router.push("/signin");
+      },
+      onError: () => {
+        logout();
         router.push("/signin");
       },
     });
