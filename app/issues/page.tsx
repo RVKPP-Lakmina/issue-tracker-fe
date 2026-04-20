@@ -8,6 +8,7 @@ import { IssueModals } from "@/components/issues/IssueModals";
 import { useIssueStore } from "@/lib/store/issueStore";
 import { useIssues } from "@/lib/hooks/useApi";
 import { Plus, Download } from "lucide-react";
+import PageWrapper from "@/components/PageWrapper";
 
 export default function IssuesPage() {
   const {
@@ -72,39 +73,30 @@ export default function IssuesPage() {
 
   return (
     <>
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div className="rounded-2xl border border-border bg-card/90 px-6 py-5 shadow-sm">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Issue Tracker
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Welcome back. Track, prioritize, and resolve issues quickly.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => handleExport("csv")}
-                size="sm"
-                title="Export issues"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Button
-                onClick={openCreateModal}
-                className="bg-primary hover:bg-primary/90"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Issue
-              </Button>
-            </div>
-          </div>
-        </div>
-
+      <PageWrapper
+        title="Issue Tracker"
+        description="Welcome back. Track, prioritize, and resolve issues quickly."
+        headerRightContent={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => handleExport("csv")}
+              size="sm"
+              title="Export issues"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+            <Button
+              onClick={openCreateModal}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Issue
+            </Button>
+          </>
+        }
+      >
         {/* Dashboard Stats */}
         <DashboardStats issues={issues} isLoading={isLoading} />
 
@@ -113,7 +105,7 @@ export default function IssuesPage() {
 
         {/* Issues Table */}
         <IssueTable issues={issues} isLoading={isLoading} />
-      </div>
+      </PageWrapper>
 
       {/* Modals */}
       <IssueModals />
