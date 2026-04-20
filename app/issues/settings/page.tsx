@@ -11,20 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Bell, Moon, Globe, Lock } from "lucide-react";
 import { useState } from "react";
+import { SelectField } from "@/components/ui/select-field";
 
 export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true);
   const [emailUpdates, setEmailUpdates] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+  const [language, setLanguage] = useState("en");
 
   return (
     <main className="flex-1 overflow-auto p-6 md:p-8">
@@ -142,17 +137,18 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="language">Language</Label>
-              <Select defaultValue="en">
-                <SelectTrigger id="language" className="bg-background">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Spanish</SelectItem>
-                  <SelectItem value="fr">French</SelectItem>
-                  <SelectItem value="de">German</SelectItem>
-                </SelectContent>
-              </Select>
+              <SelectField
+                triggerId="language"
+                value={language}
+                onValueChange={setLanguage}
+                options={[
+                  { value: "en", label: "English" },
+                  { value: "es", label: "Spanish" },
+                  { value: "fr", label: "French" },
+                  { value: "de", label: "German" },
+                ]}
+                triggerClassName="bg-background"
+              />
             </div>
           </CardContent>
         </Card>
