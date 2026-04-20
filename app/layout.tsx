@@ -21,15 +21,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isVercelDeployment = process.env.VERCEL === "1";
-
   return (
     <html lang="en" className="bg-background">
       <body className="font-sans antialiased">
         <Providers>{children}</Providers>
-        {process.env.NODE_ENV === "production" && isVercelDeployment && (
-          <Analytics />
-        )}
+        {process.env.NODE_ENV === "production" && <Analytics />}
       </body>
     </html>
   );

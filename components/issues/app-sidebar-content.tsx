@@ -16,21 +16,21 @@ import {
 } from "@/components/ui/tooltip";
 
 const mainNavItems = [
-  // {
-  //   title: "All Issues",
-  //   href: "/issues",
-  //   icon: ListTodo,
-  // },
-  // {
-  //   title: "Projects",
-  //   href: "/issues/projects",
-  //   icon: KanbanSquare,
-  // },
-  // {
-  //   title: "Gantt Chart",
-  //   href: "/issues/gantt",
-  //   icon: GanttChart,
-  // },
+  {
+    title: "All Issues",
+    href: "/issues",
+    icon: ListTodo,
+  },
+  {
+    title: "Projects",
+    href: "/issues/projects",
+    icon: KanbanSquare,
+  },
+  {
+    title: "Gantt Chart",
+    href: "/issues/gantt",
+    icon: GanttChart,
+  },
   {
     title: "Spent Time",
     href: "/issues/reports",

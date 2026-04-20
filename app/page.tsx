@@ -11,14 +11,14 @@ export default function Home() {
 
   useEffect(() => {
     initializeAuth();
-    // if (typeof window !== "undefined") {
-    //   const token = getAuthToken();
-    //   if (token) {
-    //     router.replace("/issues");
-    //   } else {
-    //     router.replace("/signin");
-    //   }
-    // }
+    if (typeof window !== "undefined") {
+      const token = getAuthToken();
+      if (token) {
+        router.replace("/issues");
+      } else {
+        router.replace("/signin");
+      }
+    }
   }, [router, initializeAuth]);
 
   return null;
