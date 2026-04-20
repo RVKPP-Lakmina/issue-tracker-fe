@@ -51,7 +51,7 @@ export default function ReportsPage() {
         : (activity as (typeof activityOptions)[number]["value"]),
     fromDate: fromDate || undefined,
     toDate: toDate || undefined,
-    pageSize: 500,
+    pageSize: 100,
   });
 
   const entries = timeEntriesResponse?.data || [];

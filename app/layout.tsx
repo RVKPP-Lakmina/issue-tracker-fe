@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   title: "Issue Tracker",
   description: "Modern Issue Tracking Application",
   icons: {
-    icon: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: "/favicon.svg",
+    apple: "/apple-icon.png",
   },
 };
 
