@@ -1,14 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const backendBaseUrl =
-  process.env.API_BASE_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "http://localhost:3001/api";
+const isProxyUrl = (url: string) => /\/api\/proxy\/?$/.test(url);
+
+const resolveBackendBaseUrl = () => {
+  const serverBaseUrl = process.env.API_BASE_URL?.trim();
+  if (serverBaseUrl) {
+    return serverBaseUrl;
+  }
+
+  const publicBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  if (publicBaseUrl && !isProxyUrl(publicBaseUrl)) {
+    return publicBaseUrl;
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    return "http://localhost:3001/api";
+  }
+
+  return null;
+};
 
 async function forwardRequest(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> },
 ) {
+  const backendBaseUrl = resolveBackendBaseUrl();
+  if (!backendBaseUrl) {
+    return NextResponse.json(
+      {
+        message:
+          "Proxy is not configured. Set API_BASE_URL in production environment.",
+      },
+      { status: 500 },
+    );
+  }
+
   const { path = [] } = await context.params;
   const targetPath = path.join("/");
 
