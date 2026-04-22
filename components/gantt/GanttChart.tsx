@@ -7,19 +7,57 @@ import { Button } from "@/components/ui/button";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { StatusBadge } from "@/components/issues/StatusBadge";
 import { PriorityBadge } from "@/components/issues/PriorityBadge";
+import { SelectField } from "@/components/ui/select-field";
+import { Spinner } from "@/components/ui/spinner";
 import PageWrapper from "../PageWrapper";
+import { useIssues, useProjects, useUsers } from "@/lib/hooks/useApi";
+import { useIssueStore } from "@/lib/store/issueStore";
+import { useAuthStore } from "@/lib/store/authStore";
+import { useEffect } from "react";
 
-interface GanttChartProps {
-  issues: Issue[];
-  onCreateClick: () => void;
-  onIssueClick: (issue: Issue) => void;
-}
+const allProjectsOption = "__ALL_PROJECTS__";
+const allUsersOption = "__ALL_USERS__";
 
-export function GanttChart({
-  issues,
-  onCreateClick,
-  onIssueClick,
-}: GanttChartProps) {
+export function GanttChart() {
+  const { user } = useAuthStore();
+  const { openCreateModal, openEditModal } = useIssueStore();
+  const [projectFilter, setProjectFilter] = useState(allProjectsOption);
+  const [userFilter, setUserFilter] = useState("");
+
+  const { data: users = [], isLoading: isUsersLoading } = useUsers();
+  const { data: projectsResponse, isLoading: isProjectsLoading } =
+    useProjects();
+  const projects = projectsResponse?.data || [];
+
+  useEffect(() => {
+    if (user?.id && !userFilter) {
+      setUserFilter(user.id);
+    }
+  }, [user?.id, userFilter]);
+
+  const { data: issuesData, isLoading } = useIssues({
+    projectId: projectFilter === allProjectsOption ? undefined : projectFilter,
+    assignedToId:
+      userFilter && userFilter !== allUsersOption ? userFilter : undefined,
+  });
+
+  const issues = useMemo(() => issuesData?.data || [], [issuesData?.data]);
+  const projectOptions = [
+    { value: allProjectsOption, label: "All projects" },
+    ...projects.map((project) => ({
+      value: project.id,
+      label: project.name,
+    })),
+  ];
+
+  const userOptions = [
+    { value: allUsersOption, label: "All users" },
+    ...users.map((listUser) => ({
+      value: listUser.id,
+      label: listUser.id === user?.id ? "ME" : listUser.name,
+    })),
+  ];
+
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
     date.setDate(date.getDate() - 7); // 7 days ago
@@ -121,145 +159,182 @@ export function GanttChart({
       title="Gantt Chart"
       description="Timeline view of all issues and tasks"
       headerRightContent={
-        <Button onClick={onCreateClick} className="gap-2">
+        <Button onClick={openCreateModal} className="gap-2">
           <Plus className="h-4 w-4" />
           Create Issue
         </Button>
       }
     >
-      {/* Date Navigation */}
-      <div className="flex items-center justify-between bg-secondary/50 rounded-lg p-4">
-        <Button variant="outline" size="sm" onClick={handlePrevWeek}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <div className="text-sm font-medium">
-          {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
-        </div>
-        <Button variant="outline" size="sm" onClick={handleNextWeek}>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
+      {/* Filters */}
+      <Card className="p-4 md:p-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <SelectField
+            label="Project"
+            value={projectFilter}
+            onValueChange={setProjectFilter}
+            triggerClassName="w-full bg-secondary/50"
+            disabled={isProjectsLoading}
+            placeholder={
+              isProjectsLoading ? "Loading projects..." : "All projects"
+            }
+            options={projectOptions}
+          />
 
-      {/* Gantt Chart Container */}
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          {/* Day Headers */}
-          <div className="flex sticky top-0 z-10 bg-card border-b border-border">
-            <div className="w-64 shrink-0 border-r border-border bg-secondary/30 p-3">
-              <div className="text-xs font-semibold text-muted-foreground">
-                TITLE
-              </div>
-            </div>
-            <div className="flex flex-1 divide-x divide-border">
-              {dayHeaders.map((date, idx) => (
-                <div
-                  key={idx}
-                  className="flex-1 p-2 text-center text-xs font-medium"
-                  style={{ minWidth: `${dayWidth}%` }}
-                >
-                  <div className="text-foreground">
-                    {date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </div>
-                  <div className="text-muted-foreground text-[10px]">
-                    {date.toLocaleDateString("en-US", { weekday: "short" })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Gantt Rows */}
-          <div className="divide-y divide-border">
-            {ganttItems.length === 0 ? (
-              <div className="flex items-center justify-center p-12">
-                <div className="text-center">
-                  <p className="text-muted-foreground">No issues to display</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onCreateClick}
-                    className="mt-4"
-                  >
-                    Create your first issue
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              ganttItems.map(({ issue, percentStart, percentWidth }) => (
-                <div
-                  key={issue.id}
-                  className="flex hover:bg-accent/50 transition-colors"
-                >
-                  {/* Issue Info */}
-                  <div className="w-64 shrink-0 border-r border-border p-3 overflow-hidden">
-                    <div
-                      className="cursor-pointer hover:text-blue-600 transition-colors"
-                      onClick={() => onIssueClick(issue)}
-                    >
-                      <h3 className="font-medium text-sm truncate text-foreground">
-                        {issue.title}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <StatusBadge status={issue.status} />
-                        <PriorityBadge priority={issue.priority} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Timeline Bar */}
-                  <div className="relative flex-1 p-2">
-                    <div className="absolute inset-y-0 left-0 right-0 pointer-events-none">
-                      <div
-                        className={`h-full flex items-center`}
-                        style={{ marginLeft: `${percentStart}%` }}
-                      >
-                        <div
-                          className={`h-8 rounded ${getStatusColor(
-                            issue.status,
-                          )} opacity-80 hover:opacity-100 transition-opacity cursor-pointer shadow-md flex items-center px-2`}
-                          style={{
-                            width: `${percentWidth}%`,
-                            minWidth: "60px",
-                          }}
-                          onClick={() => onIssueClick(issue)}
-                          title={`${issue.title} - ${new Date(
-                            issue.createdAt,
-                          ).toLocaleDateString()} to ${new Date(
-                            issue.updatedAt || issue.createdAt,
-                          ).toLocaleDateString()}`}
-                        >
-                          <span className="text-xs font-medium text-white truncate">
-                            {issue.title.substring(0, 20)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="h-12" />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          <SelectField
+            label="User"
+            value={userFilter || allUsersOption}
+            onValueChange={setUserFilter}
+            triggerClassName="w-full bg-secondary/50"
+            disabled={isUsersLoading}
+            placeholder={isUsersLoading ? "Loading users..." : "Select user"}
+            options={userOptions}
+          />
         </div>
       </Card>
 
-      {/* Legend */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { status: "open", label: "Open" },
-          { status: "in-progress", label: "In Progress" },
-          { status: "closed", label: "Closed" },
-          { status: "on-hold", label: "On Hold" },
-        ].map(({ status, label }) => (
-          <div key={status} className="flex items-center gap-2">
-            <div className={`h-3 w-3 rounded ${getStatusColor(status)}`} />
-            <span className="text-xs text-muted-foreground">{label}</span>
+      {isLoading ? (
+        <div className="flex items-center justify-center h-full">
+          <Spinner />
+        </div>
+      ) : (
+        <>
+          {/* Date Navigation */}
+          <div className="flex items-center justify-between bg-secondary/50 rounded-lg p-4">
+            <Button variant="outline" size="sm" onClick={handlePrevWeek}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="text-sm font-medium">
+              {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
+            </div>
+            <Button variant="outline" size="sm" onClick={handleNextWeek}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
-        ))}
-      </div>
+
+          {/* Gantt Chart Container */}
+          <Card className="overflow-hidden">
+            <div className="overflow-x-auto">
+              {/* Day Headers */}
+              <div className="flex sticky top-0 z-10 bg-card border-b border-border">
+                <div className="w-64 shrink-0 border-r border-border bg-secondary/30 p-3">
+                  <div className="text-xs font-semibold text-muted-foreground">
+                    TITLE
+                  </div>
+                </div>
+                <div className="flex flex-1 divide-x divide-border">
+                  {dayHeaders.map((date, idx) => (
+                    <div
+                      key={idx}
+                      className="flex-1 p-2 text-center text-xs font-medium"
+                      style={{ minWidth: `${dayWidth}%` }}
+                    >
+                      <div className="text-foreground">
+                        {date.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </div>
+                      <div className="text-muted-foreground text-[10px]">
+                        {date.toLocaleDateString("en-US", { weekday: "short" })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Gantt Rows */}
+              <div className="divide-y divide-border">
+                {ganttItems.length === 0 ? (
+                  <div className="flex items-center justify-center p-12">
+                    <div className="text-center">
+                      <p className="text-muted-foreground">
+                        No issues to display
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={openCreateModal}
+                        className="mt-4"
+                      >
+                        Create your first issue
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  ganttItems.map(({ issue, percentStart, percentWidth }) => (
+                    <div
+                      key={issue.id}
+                      className="flex hover:bg-accent/50 transition-colors"
+                    >
+                      {/* Issue Info */}
+                      <div className="w-64 shrink-0 border-r border-border p-3 overflow-hidden">
+                        <div
+                          className="cursor-pointer hover:text-blue-600 transition-colors"
+                          onClick={() => openEditModal(issue)}
+                        >
+                          <h3 className="font-medium text-sm truncate text-foreground">
+                            {issue.title}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <StatusBadge status={issue.status} />
+                            <PriorityBadge priority={issue.priority} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Timeline Bar */}
+                      <div className="relative flex-1 p-2">
+                        <div className="absolute inset-y-0 left-0 right-0 pointer-events-none">
+                          <div
+                            className={`h-full flex items-center`}
+                            style={{ marginLeft: `${percentStart}%` }}
+                          >
+                            <div
+                              className={`h-8 rounded ${getStatusColor(
+                                issue.status,
+                              )} opacity-80 hover:opacity-100 transition-opacity cursor-pointer shadow-md flex items-center px-2`}
+                              style={{
+                                width: `${percentWidth}%`,
+                                minWidth: "60px",
+                              }}
+                              onClick={() => openEditModal(issue)}
+                              title={`${issue.title} - ${new Date(
+                                issue.createdAt,
+                              ).toLocaleDateString()} to ${new Date(
+                                issue.updatedAt || issue.createdAt,
+                              ).toLocaleDateString()}`}
+                            >
+                              <span className="text-xs font-medium text-white truncate">
+                                {issue.title.substring(0, 20)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="h-12" />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </Card>
+
+          {/* Legend */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { status: "open", label: "Open" },
+              { status: "in-progress", label: "In Progress" },
+              { status: "closed", label: "Closed" },
+              { status: "on-hold", label: "On Hold" },
+            ].map(({ status, label }) => (
+              <div key={status} className="flex items-center gap-2">
+                <div className={`h-3 w-3 rounded ${getStatusColor(status)}`} />
+                <span className="text-xs text-muted-foreground">{label}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </PageWrapper>
   );
 }

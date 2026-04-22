@@ -85,6 +85,7 @@ export interface TimeEntry {
   userId: string;
   user?: Pick<User, 'id' | 'name' | 'email' | 'avatar'>;
   date: string;
+  project?: Pick<Project, 'id' | 'name'>;
   hours: number;
   activity:
   | 'requirements-definition'
@@ -147,6 +148,10 @@ export interface ProjectFilters {
 export interface TimeEntryFilters {
   userId?: string;
   issueId?: string;
+  project?: {
+    id: string;
+    name: string;
+  };
   projectId?: string;
   activity?: TimeEntry['activity'];
   fromDate?: string;

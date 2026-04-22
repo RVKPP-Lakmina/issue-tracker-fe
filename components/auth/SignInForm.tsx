@@ -12,9 +12,11 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { useSignIn } from "@/lib/hooks/useApi";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/api/error";
 
 const signInSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().trim().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -25,7 +27,6 @@ export function SignInForm() {
   const { setUser, setAccessToken } = useAuthStore();
   const { mutate: signIn, isPending } = useSignIn();
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -36,18 +37,15 @@ export function SignInForm() {
   });
 
   const onSubmit = (data: SignInFormData) => {
-    setError(null);
     signIn(data, {
       onSuccess: (response) => {
         setAccessToken(response.token);
         setUser(response.user);
+        toast.success("Signed in successfully.");
         router.push("/issues");
       },
-      onError: (error: any) => {
-        setError(
-          error.response?.data?.message ||
-            "Failed to sign in. Please try again.",
-        );
+      onError: (error) => {
+        toast.error(getApiErrorMessage(error, "Failed to sign in."));
       },
     });
   };
@@ -63,12 +61,6 @@ export function SignInForm() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {error && (
-            <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Email</label>
             <Input

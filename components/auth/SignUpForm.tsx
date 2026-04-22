@@ -12,12 +12,18 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { useSignUp } from "@/lib/hooks/useApi";
 import Link from "next/link";
 import { Eye, EyeOff, Check, X } from "lucide-react";
+import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/api/error";
 
 const signUpSchema = z
   .object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    name: z.string().trim().min(2, "Name must be at least 2 characters"),
+    email: z.string().trim().email("Invalid email address"),
+    password: z
+      .string()
+      .min(6, "Password must be at least 6 characters")
+      .regex(/[A-Z]/, "Password must include at least one uppercase letter")
+      .regex(/[0-9]/, "Password must include at least one number"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -33,7 +39,6 @@ export function SignUpForm() {
   const { mutate: signUp, isPending } = useSignUp();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -50,7 +55,6 @@ export function SignUpForm() {
   const hasNumber = /[0-9]/.test(password || "");
 
   const onSubmit = (data: SignUpFormData) => {
-    setError(null);
     signUp(
       {
         name: data.name,
@@ -61,13 +65,11 @@ export function SignUpForm() {
         onSuccess: (response) => {
           setAccessToken(response.token);
           setUser(response.user);
+          toast.success("Account created successfully.");
           router.push("/issues");
         },
-        onError: (error: any) => {
-          setError(
-            error.response?.data?.message ||
-              "Failed to sign up. Please try again.",
-          );
+        onError: (error) => {
+          toast.error(getApiErrorMessage(error, "Failed to create account."));
         },
       },
     );
@@ -84,12 +86,6 @@ export function SignUpForm() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {error && (
-            <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               Full Name

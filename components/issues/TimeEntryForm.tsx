@@ -10,11 +10,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreateTimeEntry } from "@/lib/hooks/useApi";
 import { TimeEntryFormData } from "@/lib/types";
 import { useIssueStore } from "@/lib/store/issueStore";
+import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/api/error";
 
 const timeEntrySchema = z.object({
   issueId: z.string().min(1, "Issue is required"),
   date: z.string().min(1, "Date is required"),
-  hours: z.coerce.number().positive("Hours must be greater than 0"),
+  hours: z.coerce
+    .number()
+    .min(0.25, "Hours must be at least 0.25")
+    .max(24, "Hours cannot exceed 24"),
   activity: z.enum([
     "requirements-definition",
     "basic-design",
@@ -29,7 +34,11 @@ const timeEntrySchema = z.object({
     "project-management",
     "other",
   ]),
-  comment: z.string().min(1, "Comment is required"),
+  comment: z
+    .string()
+    .trim()
+    .min(3, "Comment must be at least 3 characters")
+    .max(1000, "Comment is too long"),
 });
 
 type TimeEntryFormSchema = z.infer<typeof timeEntrySchema>;
@@ -83,8 +92,12 @@ export function TimeEntryForm({ issueId, onSuccess }: TimeEntryFormProps) {
   const onSubmit = (data: TimeEntryFormSchema) => {
     createTimeEntry(data, {
       onSuccess: () => {
+        toast.success("Time entry logged successfully.");
         closeTimeLogModal();
         onSuccess?.();
+      },
+      onError: (error) => {
+        toast.error(getApiErrorMessage(error, "Failed to log time entry."));
       },
     });
   };

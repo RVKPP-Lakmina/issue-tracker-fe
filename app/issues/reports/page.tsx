@@ -1,15 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useProjects, useTimeEntries, useUsers } from "@/lib/hooks/useApi";
-import { Download, Clock3 } from "lucide-react";
+import { Check, ChevronDown, Download, Clock3 } from "lucide-react";
 import PageWrapper from "@/components/PageWrapper";
-import { SelectField } from "@/components/ui/select-field";
+import { useAuthStore } from "@/lib/store/authStore";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 
 const allOption = "__ALL__";
+
+type SearchableOption = {
+  value: string;
+  label: string;
+  disabled?: boolean;
+};
 
 const activityOptions = [
   { value: "requirements-definition", label: "Requirements definition" },
@@ -26,6 +53,113 @@ const activityOptions = [
   { value: "other", label: "Other" },
 ] as const;
 
+function SearchableSelectField({
+  label,
+  value,
+  onValueChange,
+  placeholder,
+  searchPlaceholder,
+  emptyText,
+  options,
+}: {
+  label: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  placeholder: string;
+  searchPlaceholder: string;
+  emptyText: string;
+  options: SearchableOption[];
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 250);
+
+  const selectedOption = options.find((option) => option.value === value);
+
+  const filteredOptions = useMemo(() => {
+    const query = debouncedSearch.trim().toLowerCase();
+
+    if (!query) {
+      return options;
+    }
+
+    return options.filter((option) => {
+      return option.label.toLowerCase().includes(query);
+    });
+  }, [debouncedSearch, options]);
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-foreground">{label}</label>
+      <Popover
+        open={open}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+          if (!nextOpen) {
+            setSearch("");
+          }
+        }}
+      >
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between font-normal"
+          >
+            <span
+              className={cn(
+                "truncate text-left",
+                selectedOption ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
+              {selectedOption ? selectedOption.label : placeholder}
+            </span>
+            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-(--radix-popover-trigger-width) p-0"
+          align="start"
+        >
+          <Command shouldFilter={false}>
+            <CommandInput
+              placeholder={searchPlaceholder}
+              value={search}
+              onValueChange={setSearch}
+            />
+            <CommandList>
+              <CommandEmpty>{emptyText}</CommandEmpty>
+              <CommandGroup>
+                {filteredOptions.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.value}
+                    onSelect={() => {
+                      onValueChange(option.value);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    disabled={option.disabled}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === option.value ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    {option.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
 export default function ReportsPage() {
   const [userId, setUserId] = useState(allOption);
   const [projectId, setProjectId] = useState(allOption);
@@ -33,6 +167,7 @@ export default function ReportsPage() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
+  const currentUserId = useAuthStore((state) => state.user?.id);
   const { data: users = [] } = useUsers();
   const { data: projectsResponse } = useProjects();
   const projects = projectsResponse?.data || [];
@@ -102,57 +237,98 @@ export default function ReportsPage() {
       }
     >
       <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-          <SelectField
-            value={userId}
-            onValueChange={setUserId}
-            placeholder="All users"
-            options={[
-              { value: allOption, label: "All users" },
-              ...users.map((user) => ({ value: user.id, label: user.name })),
-            ]}
-          />
+        <Accordion type="single" collapsible defaultValue="filters">
+          <AccordionItem value="filters" className="border-b-0">
+            <CardHeader className="px-6 py-0">
+              <AccordionTrigger className="py-0 no-underline hover:no-underline">
+                <div className="flex w-full items-center justify-between gap-4">
+                  <div className="text-left">
+                    <CardTitle>Filters</CardTitle>
+                    <p className="mt-1 text-sm font-normal text-muted-foreground">
+                      Narrow results by user, project, activity, and date range.
+                    </p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+            </CardHeader>
+            <AccordionContent>
+              <CardContent className="space-y-4 pt-0">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <SearchableSelectField
+                    label="User"
+                    value={userId}
+                    onValueChange={setUserId}
+                    placeholder="All users"
+                    searchPlaceholder="Search users..."
+                    emptyText="No users found"
+                    options={[
+                      { value: allOption, label: "All users" },
+                      ...users.map((user) => ({
+                        value: user.id,
+                        label: user.id === currentUserId ? "ME" : user.name,
+                      })),
+                    ]}
+                  />
 
-          <SelectField
-            value={projectId}
-            onValueChange={setProjectId}
-            placeholder="All projects"
-            options={[
-              { value: allOption, label: "All projects" },
-              ...projects.map((project) => ({
-                value: project.id,
-                label: project.name,
-              })),
-            ]}
-          />
+                  <SearchableSelectField
+                    label="Project"
+                    value={projectId}
+                    onValueChange={setProjectId}
+                    placeholder="All projects"
+                    searchPlaceholder="Search projects..."
+                    emptyText="No projects found"
+                    options={[
+                      { value: allOption, label: "All projects" },
+                      ...projects.map((project) => ({
+                        value: project.id,
+                        label: project.name,
+                      })),
+                    ]}
+                  />
 
-          <SelectField
-            value={activity}
-            onValueChange={setActivity}
-            placeholder="All activities"
-            options={[
-              { value: allOption, label: "All activities" },
-              ...activityOptions.map((option) => ({
-                value: option.value,
-                label: option.label,
-              })),
-            ]}
-          />
+                  <SearchableSelectField
+                    label="Activity"
+                    value={activity}
+                    onValueChange={setActivity}
+                    placeholder="All activities"
+                    searchPlaceholder="Search activities..."
+                    emptyText="No activities found"
+                    options={[
+                      { value: allOption, label: "All activities" },
+                      ...activityOptions.map((option) => ({
+                        value: option.value,
+                        label: option.label,
+                      })),
+                    ]}
+                  />
 
-          <Input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-          />
-          <Input
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-          />
-        </CardContent>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Date From
+                      </label>
+                      <Input
+                        type="date"
+                        value={fromDate}
+                        onChange={(e) => setFromDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Date To
+                      </label>
+                      <Input
+                        type="date"
+                        value={toDate}
+                        onChange={(e) => setToDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </Card>
 
       <Card>
@@ -195,7 +371,7 @@ export default function ReportsPage() {
                         {entry.user?.name || "Unknown"}
                       </td>
                       <td className="py-2 pr-2">
-                        {entry.issue?.project?.name || "-"}
+                        {entry?.project?.name || "-"}
                       </td>
                       <td className="py-2 pr-2">
                         {entry.issue?.title || entry.issueId}
