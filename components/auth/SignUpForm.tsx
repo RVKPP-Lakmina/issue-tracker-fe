@@ -21,7 +21,7 @@ const signUpSchema = z
     email: z.string().trim().email("Invalid email address"),
     password: z
       .string()
-      .min(6, "Password must be at least 6 characters")
+      .min(8, "Password must be at least 6 characters")
       .regex(/[A-Z]/, "Password must include at least one uppercase letter")
       .regex(/[0-9]/, "Password must include at least one number"),
     confirmPassword: z.string(),
@@ -151,7 +151,7 @@ export function SignUpForm() {
                       <X size={14} className="text-muted-foreground" />
                     )}
                     <span className="text-xs text-muted-foreground">
-                      At least 6 characters
+                      At least 8 characters
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
