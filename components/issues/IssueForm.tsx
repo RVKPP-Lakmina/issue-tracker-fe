@@ -18,13 +18,21 @@ import {
 } from "@/lib/hooks/useApi";
 import { useIssueStore } from "@/lib/store/issueStore";
 import { useAuthStore } from "@/lib/store/authStore";
+import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/api/error";
 
 const issueFormSchema = z.object({
   title: z
     .string()
+    .trim()
     .min(1, "Title is required")
-    .min(3, "Title must be at least 3 characters"),
-  description: z.string().optional(),
+    .min(3, "Title must be at least 3 characters")
+    .max(200, "Title must be less than 200 characters"),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Description is required")
+    .max(5000, "Description is too long"),
   status: z.enum(["open", "in-progress", "closed", "on-hold"]),
   priority: z.enum(["low", "medium", "high", "critical"]),
   projectId: z.string().optional(),
@@ -111,6 +119,7 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
 
   const onSubmit = (data: IssueFormDataSchema) => {
     if (blockedCreationReason) {
+      toast.error(blockedCreationReason);
       return;
     }
 
@@ -129,17 +138,25 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
         { id: issue.id, data: normalizedData },
         {
           onSuccess: () => {
+            toast.success("Issue updated successfully.");
             closeEditModal();
             onSuccess?.();
+          },
+          onError: (error) => {
+            toast.error(getApiErrorMessage(error, "Failed to update issue."));
           },
         },
       );
     } else {
       createIssue(normalizedData, {
         onSuccess: () => {
+          toast.success("Issue created successfully.");
           closeCreateModal();
           reset();
           onSuccess?.();
+        },
+        onError: (error) => {
+          toast.error(getApiErrorMessage(error, "Failed to create issue."));
         },
       });
     }
@@ -169,7 +186,7 @@ export function IssueForm({ issue, onSuccess }: IssueFormProps) {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
-          Description
+          Description *
         </label>
         <Textarea
           {...register("description")}
