@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect, useState } from "react";
 import { createApiClient } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/store/authStore";
+import { Toaster } from "@/components/ui/sonner";
 
 export function Providers({ children }: { children: ReactNode }) {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
@@ -35,6 +36,9 @@ export function Providers({ children }: { children: ReactNode }) {
   }, [initializeAuth]);
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <Toaster richColors position="top-right" />
+    </QueryClientProvider>
   );
 }
