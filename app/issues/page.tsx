@@ -81,7 +81,6 @@ export default function IssuesPage() {
             <Button
               variant="outline"
               onClick={() => handleExport("csv")}
-              size="sm"
               title="Export issues"
             >
               <Download className="h-4 w-4 mr-2" />
