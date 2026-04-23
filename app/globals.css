@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -75,8 +75,8 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -121,5 +121,48 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .auth-left-section {
+    @apply w-full lg:w-[45%] lg:h-screen px-6 lg:px-16 flex flex-col overflow-y-auto;
+  }
+
+  .form-title {
+    @apply text-4xl font-bold mb-10;
+  }
+
+  .auth-layout {
+    @apply flex flex-col justify-between lg:flex-row h-screen relative overflow-hidden;
+  }
+
+  .scrollbar-hide-default {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .auth-logo {
+    @apply pt-6 lg:pt-8 mb-8 lg:mb-12;
+  }
+
+  .auth-right-section {
+    @apply w-full max-lg:border-t max-lg:border-gray-600 lg:w-[55%] lg:h-screen bg-[#1775A4] px-6 py-4 md:p-6 lg:py-12 lg:px-[4.5rem] flex flex-col justify-start;
+  }
+
+  .auth-blockquote {
+    @apply text-sm md:text-xl lg:text-2xl font-medium text-gray-200 mb-1 md:mb-6 lg:mb-8;
+  }
+
+  .auth-testimonial-author {
+    @apply text-xs md:text-lg font-bold text-gray-200 not-italic;
+  }
+
+  .auth-dashboard-preview {
+    @apply border-[6px] left-0 hidden w-[1024px] h-auto max-w-none lg:block rounded-xl shadow-2xl;
+  }
+
+  .select-trigger {
+    @apply w-full !h-12 px-3 py-3 text-base border-gray-600 bg-gray-800 text-white rounded-lg focus:!border-yellow-500 focus:ring-0;
   }
 }
